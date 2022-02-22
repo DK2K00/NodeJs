@@ -8,6 +8,11 @@ const path = require("path");
 const adminData = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 
+//Setting view engine for templates
+app.set("view engine", "pug");
+//Setting default folder to find template files
+app.set("views", "views");
+
 //Parsing request
 app.use(bodyParser.urlencoded({ extended: false }));
 //Using static pages
@@ -19,7 +24,7 @@ app.use(shopRoutes);
 
 //404 page
 app.use((req, res, next) => {
-  res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
+  res.status(404).render('404', {pageTitle: 'Page Not Found'});
 });
 
 //Creating a server port
