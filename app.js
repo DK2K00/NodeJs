@@ -5,8 +5,9 @@ const bodyParser = require("body-parser");
 const path = require("path");
 
 //Importing routes from different folders
-const adminData = require("./routes/admin");
+const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
+const errorController = require('./controllers/error');
 
 //Setting view engine for templates
 app.set("view engine", "ejs");
@@ -19,13 +20,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
 //Handling route requests
-app.use("/admin", adminData.routes);
+app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 
 //404 page
-app.use((req, res, next) => {
-  res.status(404).render("404", { pageTitle: "Page Not Found" });
-});
+app.use(errorController.get404);
 
 //Creating a server port
 app.listen(3000);
