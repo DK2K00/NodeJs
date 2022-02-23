@@ -3,24 +3,13 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const path = require("path");
-const expressHbs = require('express-handlebars');
 
 //Importing routes from different folders
 const adminData = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 
-//App engine is set due to handlebars being a 3rd party package
-//not integrated into node
-app.engine(
-  'hbs',
-  expressHbs({
-    layoutsDir: 'views/layouts/',
-    defaultLayout: 'main-layout',
-    extname: 'hbs'
-  })
-);
 //Setting view engine for templates
-app.set("view engine", "hbs");
+app.set("view engine", "ejs");
 //Setting default folder to find template files
 app.set("views", "views");
 
