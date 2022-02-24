@@ -9,6 +9,7 @@ const p = path.join(
 );
 
 //Getting products from storage
+// cb -> callback
 const getProductsFromFile = (cb) => {
   fs.readFile(p, (err, fileContent) => {
     if (err) {
@@ -21,8 +22,11 @@ const getProductsFromFile = (cb) => {
 
 //Creating a new product
 module.exports = class Product {
-  constructor(t) {
-    this.title = t;
+  constructor(title, imageUrl, description, price) {
+    this.title = title;
+    this.imageUrl = imageUrl;
+    this.description = description;
+    this.price = price;
   }
 
   //Storing new product
