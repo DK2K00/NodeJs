@@ -1,0 +1,421 @@
+warning: LF will be replaced by CRLF in views/admin/products.ejs.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in views/shop/cart.ejs.
+The file will have its original line endings in your working directory
+[1mdiff --git a/controllers/admin.js b/controllers/admin.js[m
+[1mindex 93ea4f2..02a1a84 100644[m
+[1m--- a/controllers/admin.js[m
+[1m+++ b/controllers/admin.js[m
+[36m@@ -2,12 +2,10 @@[m [mconst Product = require("../models/product");[m
+ [m
+ //Controller to get product request[m
+ exports.getAddProduct = (req, res, next) => {[m
+[31m-  res.render("admin/add-product", {[m
+[32m+[m[32m  res.render("admin/edit-product", {[m
+     pageTitle: "Add Product",[m
+     path: "/admin/add-product",[m
+[31m-    formsCSS: true,[m
+[31m-    productCSS: true,[m
+[31m-    activeAddProduct: true,[m
+[32m+[m[32m    editing: false[m
+   });[m
+ };[m
+ [m
+[36m@@ -22,6 +20,44 @@[m [mexports.postAddProduct = (req, res, next) => {[m
+   res.redirect("/");[m
+ };[m
+ [m
+[32m+[m[32m//Controller to edit products[m
+[32m+[m[32mexports.getEditProduct = (req, res, next) => {[m
+[32m+[m[32m  const editMode = req.query.edit;[m
+[32m+[m[32m  if (!editMode) {[m
+[32m+[m[32m    return res.redirect("/");[m
+[32m+[m[32m  }[m
+[32m+[m[32m  const prodId = req.params.productId;[m
+[32m+[m[32m  Product.findById(prodId, (product) => {[m
+[32m+[m[32m    if (!product) {[m
+[32m+[m[32m      return res.redirect("/");[m
+[32m+[m[32m    }[m
+[32m+[m[32m    res.render("admin/edit-product", {[m
+[32m+[m[32m      pageTitle: "Edit Product",[m
+[32m+[m[32m      path: "/admin/edit-product",[m
+[32m+[m[32m      editing: editMode,[m
+[32m+[m[32m      product: product,[m
+[32m+[m[32m    });[m
+[32m+[m[32m  });[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32m//Controller to update edited product[m
+[32m+[m[32mexports.postEditProduct = (req, res, next) => {[m
+[32m+[m[32m  const prodId = req.body.productId;[m
+[32m+[m[32m  const updatedTitle = req.body.title;[m
+[32m+[m[32m  const updatedPrice = req.body.price;[m
+[32m+[m[32m  const updatedImageUrl = req.body.imageUrl;[m
+[32m+[m[32m  const updatedDesc = req.body.description;[m
+[32m+[m[32m  const updatedProduct = new Product([m
+[32m+[m[32m    prodId,[m
+[32m+[m[32m    updatedTitle,[m
+[32m+[m[32m    updatedImageUrl,[m
+[32m+[m[32m    updatedDesc,[m
+[32m+[m[32m    updatedPrice[m
+[32m+[m[32m  );[m
+[32m+[m[32m  updatedProduct.save();[m
+[32m+[m[32m  res.redirect("/admin/products");[m
+[32m+[m[32m};[m
+[32m+[m
+ //Controller to get all available products[m
+ exports.getProducts = (req, res, next) => {[m
+   //Rendering HTML file using template engine[m
+[36m@@ -33,3 +69,10 @@[m [mexports.getProducts = (req, res, next) => {[m
+     });[m
+   });[m
+ };[m
+[32m+[m
+[32m+[m[32m//Controller to delete product[m
+[32m+[m[32mexports.postDeleteProduct = (req, res, next) => {[m
+[32m+[m[32m  const prodId = req.body.productId;[m
+[32m+[m[32m  Product.deleteById(prodId);[m
+[32m+[m[32m  res.redirect('/admin/products');[m
+[32m+[m[32m};[m
+[1mdiff --git a/controllers/shop.js b/controllers/shop.js[m
+[1mindex d798562..56cbfc1 100644[m
+[1m--- a/controllers/shop.js[m
+[1m+++ b/controllers/shop.js[m
+[36m@@ -17,7 +17,7 @@[m [mexports.getProduct = (req, res, next) => {[m
+     res.render("shop/product-detail", {[m
+       product: product,[m
+       pageTitle: product.title,[m
+[31m-      path: "/product",[m
+[32m+[m[32m      path: "/products",[m
+     });[m
+   });[m
+ };[m
+[36m@@ -33,9 +33,23 @@[m [mexports.getIndex = (req, res, next) => {[m
+ };[m
+ [m
+ exports.getCart = (req, res, next) => {[m
+[31m-  res.render("shop/cart", {[m
+[31m-    path: "/cart",[m
+[31m-    pageTitle: "Your Cart",[m
+[32m+[m[32m  Cart.getCart((cart) => {[m
+[32m+[m[32m    Product.fetchAll((products) => {[m
+[32m+[m[32m      const cartProducts = [];[m
+[32m+[m[32m      for (product of products) {[m
+[32m+[m[32m        const cartProductData = cart.products.find([m
+[32m+[m[32m          (prod) => prod.id === product.id[m
+[32m+[m[32m        );[m
+[32m+[m[32m        if (cartProductData) {[m
+[32m+[m[32m          cartProducts.push({ productData: product, qty: cartProductData.qty });[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m[32m      res.render("shop/cart", {[m
+[32m+[m[32m        path: "/cart",[m
+[32m+[m[32m        pageTitle: "Your Cart",[m
+[32m+[m[32m        products: cartProducts,[m
+[32m+[m[32m      });[m
+[32m+[m[32m    });[m
+   });[m
+ };[m
+ [m
+[36m@@ -47,6 +61,14 @@[m [mexports.postCart = (req, res, next) => {[m
+   res.redirect("/cart");[m
+ };[m
+ [m
+[32m+[m[32mexports.postCartDeleteProduct = (req, res, next) => {[m
+[32m+[m[32m  const prodId = req.body.productId;[m
+[32m+[m[32m  Product.findById(prodId, (product) => {[m
+[32m+[m[32m    Cart.deleteProduct(prodId, product.price);[m
+[32m+[m[32m    res.redirect("/cart");[m
+[32m+[m[32m  });[m
+[32m+[m[32m};[m
+[32m+[m
+ exports.getOrders = (req, res, next) => {[m
+   res.render("shop/orders", {[m
+     path: "/orders",[m
+[1mdiff --git a/data/cart.json b/data/cart.json[m
+[1mindex 750b9b9..6a52789 100644[m
+[1m--- a/data/cart.json[m
+[1m+++ b/data/cart.json[m
+[36m@@ -1 +1 @@[m
+[31m-{"products":[{"id":"12345","qty":2},{"id":"0.3325435975990729","qty":1},{"id":"0.8370343830909119","qty":1}],"totalPrice":78.97999999999999}[m
+\ No newline at end of file[m
+[32m+[m[32m{"products":[],"totalPrice":0.01999999999999602}[m
+\ No newline at end of file[m
+[1mdiff --git a/data/products.json b/data/products.json[m
+[1mindex 3f90fea..95fbc44 100644[m
+[1m--- a/data/products.json[m
+[1m+++ b/data/products.json[m
+[36m@@ -1 +1 @@[m
+[31m-[{"id":"12345","title":"Book1","imageUrl":"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80","description":"Good book","price":"19"},{"title":"Book2","imageUrl":"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80","description":"Nice book","price":"20.99","id":"0.3325435975990729"},{"title":"Book3","imageUrl":"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80","description":"Yet another book.","price":"19.99","id":"0.8370343830909119"}][m
+\ No newline at end of file[m
+[32m+[m[32m[{"id":"12345","title":"Book1","imageUrl":"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80","description":"Good book","price":"18.99"},{"title":"Book2","imageUrl":"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80","description":"Nice book","price":"20.99","id":"0.3325435975990729"}][m
+\ No newline at end of file[m
+[1mdiff --git a/models/cart.js b/models/cart.js[m
+[1mindex aa827a6..f8f5b21 100644[m
+[1m--- a/models/cart.js[m
+[1m+++ b/models/cart.js[m
+[36m@@ -1,7 +1,11 @@[m
+ const fs = require("fs");[m
+ const path = require("path");[m
+ [m
+[31m-const p = path.join(path.dirname(require.main.filename), "data", "cart.json");[m
+[32m+[m[32mconst p = path.join([m
+[32m+[m[32m  path.dirname(require.main.filename),[m
+[32m+[m[32m  "data",[m
+[32m+[m[32m  "cart.json"[m
+[32m+[m[32m);[m
+ [m
+ module.exports = class Cart {[m
+   static addProduct(id, productPrice) {[m
+[36m@@ -33,4 +37,38 @@[m [mmodule.exports = class Cart {[m
+       });[m
+     });[m
+   }[m
+[32m+[m
+[32m+[m[32m  static deleteProduct(id, productPrice) {[m
+[32m+[m[32m    fs.readFile(p, (err, fileContent) => {[m
+[32m+[m[32m      if (err) {[m
+[32m+[m[32m        return;[m
+[32m+[m[32m      }[m
+[32m+[m[32m      const updatedCart = { ...JSON.parse(fileContent) };[m
+[32m+[m[32m      const product = updatedCart.products.find((prod) => prod.id === id);[m
+[32m+[m[32m      if (!product) {[m
+[32m+[m[32m        return;[m
+[32m+[m[32m      }[m
+[32m+[m[32m      const productQty = product.qty;[m
+[32m+[m[32m      updatedCart.products = updatedCart.products.filter([m
+[32m+[m[32m        (prod) => prod.id !== id[m
+[32m+[m[32m      );[m
+[32m+[m[32m      updatedCart.totalPrice =[m
+[32m+[m[32m        updatedCart.totalPrice - productPrice * productQty;[m
+[32m+[m
+[32m+[m[32m      fs.writeFile(p, JSON.stringify(updatedCart), (err) => {[m
+[32m+[m[32m        console.log(err);[m
+[32m+[m[32m      });[m
+[32m+[m[32m    });[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  static getCart(cb) {[m
+[32m+[m[32m    fs.readFile(p, (err, fileContent) => {[m
+[32m+[m[32m      const cart = JSON.parse(fileContent);[m
+[32m+[m[32m      if (err) {[m
+[32m+[m[32m        cb(null);[m
+[32m+[m[32m      } else {[m
+[32m+[m[32m        cb(cart);[m
+[32m+[m[32m      }[m
+[32m+[m[32m    });[m
+[32m+[m[32m  }[m
+ };[m
+[1mdiff --git a/models/product.js b/models/product.js[m
+[1mindex f326321..7e484cb 100644[m
+[1m--- a/models/product.js[m
+[1m+++ b/models/product.js[m
+[36m@@ -1,5 +1,6 @@[m
+ const fs = require("fs");[m
+ const path = require("path");[m
+[32m+[m[32mconst Cart = require("./cart");[m
+ [m
+ //Path to store data in Data folder[m
+ const p = path.join([m
+[36m@@ -22,24 +23,48 @@[m [mconst getProductsFromFile = (cb) => {[m
+ [m
+ //Creating a new product[m
+ module.exports = class Product {[m
+[31m-  constructor(title, imageUrl, description, price) {[m
+[32m+[m[32m  constructor(id, title, imageUrl, description, price) {[m
+[32m+[m[32m    this.id = id;[m
+     this.title = title;[m
+     this.imageUrl = imageUrl;[m
+     this.description = description;[m
+     this.price = price;[m
+   }[m
+ [m
+[31m-  //Storing new product[m
+[32m+[m[32m  //Updating product[m
+   save() {[m
+[31m-    this.id = Math.random().toString();[m
+     getProductsFromFile((products) => {[m
+[31m-      products.push(this);[m
+[31m-      fs.writeFile(p, JSON.stringify(products), (err) => {[m
+[31m-        console.log(err);[m
+[31m-      });[m
+[32m+[m[32m      if (this.id) {[m
+[32m+[m[32m        const existingProductIndex = products.findIndex([m
+[32m+[m[32m          (prod) => prod.id === this.id[m
+[32m+[m[32m        );[m
+[32m+[m[32m        const updatedProducts = [...products];[m
+[32m+[m[32m        updatedProducts[existingProductIndex] = this;[m
+[32m+[m[32m        fs.writeFile(p, JSON.stringify(updatedProducts), (err) => {[m
+[32m+[m[32m          console.log(err);[m
+[32m+[m[32m        });[m
+[32m+[m[32m        //Storing new product[m
+[32m+[m[32m      } else {[m
+[32m+[m[32m        this.id = Math.random().toString();[m
+[32m+[m[32m        products.push(this);[m
+[32m+[m[32m        fs.writeFile(p, JSON.stringify(products), (err) => {[m
+[32m+[m[32m          console.log(err);[m
+[32m+[m[32m        });[m
+[32m+[m[32m      }[m
+     });[m
+   }[m
+ [m
+[32m+[m[32m  static deleteById(id) {[m
+[32m+[m[32m    getProductsFromFile((products) => {[m
+[32m+[m[32m      const product = products.find((prod) => prod.id === id);[m
+[32m+[m[32m      const updatedProducts = products.filter((prod) => prod.id !== id);[m
+[32m+[m[32m      fs.writeFile(p, JSON.stringify(updatedProducts), (err) => {[m
+[32m+[m[32m        if (!err) {[m
+[32m+[m[32m          Cart.deleteProduct(id, product.price);[m
+[32m+[m[32m        }[m
+[32m+[m[32m      });[m
+[32m+[m[32m    });[m
+[32m+[m[32m  }[m
+   static fetchAll(cb) {[m
+     getProductsFromFile(cb);[m
+   }[m
+[1mdiff --git a/routes/admin.js b/routes/admin.js[m
+[1mindex e022266..928138d 100644[m
+[1m--- a/routes/admin.js[m
+[1m+++ b/routes/admin.js[m
+[36m@@ -14,4 +14,9 @@[m [mrouter.get("/products", adminController.getProducts);[m
+ // /admin/add-product => POST[m
+ router.post("/add-product", adminController.postAddProduct);[m
+ [m
+[32m+[m[32mrouter.get("/edit-product/:productId", adminController.getEditProduct);[m
+[32m+[m
+[32m+[m[32mrouter.post("/edit-product", adminController.postEditProduct);[m
+[32m+[m
+[32m+[m[32mrouter.post('/delete-product', adminController.postDeleteProduct);[m
+ module.exports = router;[m
+[1mdiff --git a/routes/shop.js b/routes/shop.js[m
+[1mindex 7c2464f..d85b10c 100644[m
+[1m--- a/routes/shop.js[m
+[1m+++ b/routes/shop.js[m
+[36m@@ -10,6 +10,7 @@[m [mrouter.get("/products", shopController.getProducts);[m
+ router.get("/products/:productId", shopController.getProduct);[m
+ router.get("/cart", shopController.getCart);[m
+ router.post("/cart", shopController.postCart);[m
+[32m+[m[32mrouter.post("/cart-delete-item", shopController.postCartDeleteProduct);[m
+ router.get("/orders", shopController.getOrders);[m
+ router.get("/checkout", shopController.getCheckout);[m
+ [m
+[1mdiff --git a/views/admin/add-product.ejs b/views/admin/add-product.ejs[m
+[1mdeleted file mode 100644[m
+[1mindex 1b4e95e..0000000[m
+[1m--- a/views/admin/add-product.ejs[m
+[1m+++ /dev/null[m
+[36m@@ -1,31 +0,0 @@[m
+[31m-<%- include('../includes/head.ejs') %>[m
+[31m-    <link rel="stylesheet" href="/css/forms.css">[m
+[31m-    <link rel="stylesheet" href="/css/product.css">[m
+[31m-</head>[m
+[31m-[m
+[31m-<body>[m
+[31m-   <%- include('../includes/navigation.ejs') %>[m
+[31m-[m
+[31m-    <main>[m
+[31m-        <form class="product-form" action="/admin/add-product" method="POST">[m
+[31m-            <div class="form-control">[m
+[31m-                <label for="title">Title</label>[m
+[31m-                <input type="text" name="title" id="title">[m
+[31m-            </div>[m
+[31m-            <div class="form-control">[m
+[31m-                <label for="imageUrl">Image URL</label>[m
+[31m-                <input type="text" name="imageUrl" id="imageUrl">[m
+[31m-            </div>[m
+[31m-            <div class="form-control">[m
+[31m-                <label for="price">Price</label>[m
+[31m-                <input type="number" name="price" id="price" step="0.01">[m
+[31m-            </div>[m
+[31m-            <div class="form-control">[m
+[31m-                <label for="description">Description</label>[m
+[31m-                <textarea name="description" id="description" rows="5"></textarea>[m
+[31m-            </div>[m
+[31m-[m
+[31m-            <button class="btn" type="submit">Add Product</button>[m
+[31m-        </form>[m
+[31m-    </main>[m
+[31m-<%- include('../includes/end.ejs') %>[m
+\ No newline at end of file[m
+[1mdiff --git a/views/admin/edit-product.ejs b/views/admin/edit-product.ejs[m
+[1mindex e69de29..fa19db1 100644[m
+[1m--- a/views/admin/edit-product.ejs[m
+[1m+++ b/views/admin/edit-product.ejs[m
+[36m@@ -0,0 +1,34 @@[m
+[32m+[m[32m<%- include('../includes/head.ejs') %>[m
+[32m+[m[32m    <link rel="stylesheet" href="/css/forms.css">[m
+[32m+[m[32m    <link rel="stylesheet" href="/css/product.css">[m
+[32m+[m[32m</head>[m
+[32m+[m
+[32m+[m[32m<body>[m
+[32m+[m[32m   <%- include('../includes/navigation.ejs') %>[m
+[32m+[m
+[32m+[m[32m    <main>[m
+[32m+[m[32m        <form class="product-form" action="/admin/<% if (editing) { %>edit-product<% } else { %>add-product<% } %>" method="POST">[m
+[32m+[m[32m            <div class="form-control">[m
+[32m+[m[32m                <label for="title">Title</label>[m
+[32m+[m[32m                <input type="text" name="title" id="title" value="<% if (editing) { %><%= product.title %><% } %>">[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            <div class="form-control">[m
+[32m+[m[32m                <label for="imageUrl">Image URL</label>[m
+[32m+[m[32m                <input type="text" name="imageUrl" id="imageUrl" value="<% if (editing) { %><%= product.imageUrl %><% } %>">[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            <div class="form-control">[m
+[32m+[m[32m                <label for="price">Price</label>[m
+[32m+[m[32m                <input type="number" name="price" id="price" step="0.01" value="<% if (editing) { %><%= product.price %><% } %>">[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            <div class="form-control">[m
+[32m+[m[32m                <label for="description">Description</label>[m
+[32m+[m[32m                <textarea name="description" id="description" rows="5"><% if (editing) { %><%= product.description %><% } %></textarea>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            <% if (editing) { %>[m
+[32m+[m[32m                <input type="hidden" value="<%= product.id %>" name="productId">[m
+[32m+[m[32m            <% } %>[m
+[32m+[m
+[32m+[m[32m            <button class="btn" type="submit"><% if (editing) { %>Update Product<% } else { %>Add Product<% } %></button>[m
+[32m+[m[32m        </form>[m
+[32m+[m[32m    </main>[m
+[32m+[m[32m<%- include('../includes/end.ejs') %>[m
+\ No newline at end of file[m
+[1mdiff --git a/views/admin/products.ejs b/views/admin/products.ejs[m
+[1mindex 13827f6..6a221a0 100644[m
+[1m--- a/views/admin/products.ejs[m
+[1m+++ b/views/admin/products.ejs[m
+[36m@@ -27,8 +27,9 @@[m
+                                     </p>[m
+                                 </div>[m
+                                 <div class="card__actions">[m
+[31m-                                    <a href="/admin/edit-product" class="btn">Edit</a>[m
+[32m+[m[32m                                    <a href="/admin/edit-product/<%= product.id %>?edit=true" class="btn">Edit</a>[m
+                                     <form action="/admin/delete-product" method="POST">[m
+[32m+[m[32m                                        <input type="hidden" value="<%= product.id %>" name="productId">[m
+                                         <button class="btn" type="submit">Delete</button>[m
+                                     </form>[m
+ [m
+[1mdiff --git a/views/shop/cart.ejs b/views/shop/cart.ejs[m
+[1mindex aac0373..c12b8a9 100644[m
+[1m--- a/views/shop/cart.ejs[m
+[1m+++ b/views/shop/cart.ejs[m
+[36m@@ -3,4 +3,21 @@[m
+ [m
+     <body>[m
+         <%- include('../includes/navigation.ejs') %>[m
+[32m+[m[32m        <main>[m
+[32m+[m[32m            <% if (products.length > 0) { %>[m
+[32m+[m[32m                <ul>[m
+[32m+[m[32m                    <% products.forEach(p => { %>[m
+[32m+[m[32m                        <li>[m
+[32m+[m[32m                            <p><%= p.productData.title %> (<%= p.qty %>)</p>[m
+[32m+[m[32m                            <form action="/cart-delete-item" method="POST">[m
+[32m+[m[32m                                <input type="hidden" value="<%= p.productData.id %>" name="productId">[m
+[32m+[m[32m                                <button class="btn" type="submit">Delete</button>[m
+[32m+[m[32m                            </form>[m
+[32m+[m[32m                        </li>[m
+[32m+[m[32m                    <% }) %>[m
+[32m+[m[32m                </ul>[m
+[32m+[m[32m            <% } else { %>[m
+[32m+[m[32m                <h1>No Products in Cart!</h1>[m
+[32m+[m[32m            <% } %>[m
+[32m+[m[32m        </main>[m
+         <%- include('../includes/end.ejs') %>[m
+\ No newline at end of file[m
