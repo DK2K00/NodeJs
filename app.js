@@ -3,12 +3,13 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const path = require("path");
+const db = require('./util/database');
 
 //Importing routes from different folders
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const errorController = require('./controllers/error');
-
+    
 //Setting view engine for templates
 app.set("view engine", "ejs");
 //Setting default folder to find template files
