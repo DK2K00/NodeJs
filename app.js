@@ -3,13 +3,14 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const path = require("path");
-const db = require('./util/database');
+const db = require("./util/database");
+const sequelize = require("./util/database");
 
 //Importing routes from different folders
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
-const errorController = require('./controllers/error');
-    
+const errorController = require("./controllers/error");
+
 //Setting view engine for templates
 app.set("view engine", "ejs");
 //Setting default folder to find template files
@@ -27,5 +28,12 @@ app.use(shopRoutes);
 //404 page
 app.use(errorController.get404);
 
-//Creating a server port
-app.listen(3000);
+//Connecting to server only after connecting to database
+sequelize
+  .sync()
+  .then((result) => {
+    app.listen(3000);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
